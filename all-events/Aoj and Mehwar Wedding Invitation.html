@@ -1,0 +1,728 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Aoj and Mehwar Wedding Invitation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Marcellus&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow phone-width column. Sealed envelope -> arched night-sky title -> scratch-to-reveal date -> countdown -> event cards (each with its own mood and sound) -> details -> RSVP.
+   Deliberately single-look (a printed invitation), so colors are set explicitly on every surface. */
+:root {
+  --wine: #5b1a2e;
+  --wine-deep: #2a0d18;
+  --rose: #d99aa6;
+  --blush: #f7e9e6;
+  --paper: #fcf6f3;
+  --gold: #c9a24a;
+  --gold-soft: #e8d29a;
+  --ink: #3a2228;
+  --ink-soft: #7a5b63;
+  --display: "Pinyon Script", "Snell Roundhand", cursive;
+  --head: "Marcellus", Georgia, serif;
+  --body: "Hanken Grotesk", system-ui, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--wine-deep);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+  overflow-x: hidden;
+}
+h1, h2, h3, p { margin: 0; text-wrap: balance; }
+.script { font-family: var(--display); font-weight: 400; }
+.eyebrow { font-family: var(--head); letter-spacing: .28em; text-transform: uppercase; font-size: .72rem; color: var(--gold); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+/* ---------- Envelope gate ---------- */
+#gate {
+  position: fixed; inset: 0; z-index: 50; perspective: 1500px; overflow: hidden;
+  display: grid; place-items: center; align-content: center; gap: 26px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px));
+  text-align: center;
+}
+#gate.gone { visibility: hidden; pointer-events: none; }
+.door {
+  position: absolute; top: 0; bottom: 0; width: 50.3%; z-index: 0; backface-visibility: hidden;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.2) 0 2px, transparent 3px) 0 0 / 24px 24px,
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.12) 0 2px, transparent 3px) 12px 12px / 24px 24px,
+    linear-gradient(160deg, #eab9c1 0%, #d796a3 45%, #bf7585 100%);
+  transition: transform 1.9s cubic-bezier(.6,0,.2,1);
+}
+.door::after { content: ""; position: absolute; inset: 22px; border: 1px solid rgba(232,210,154,.9); box-shadow: inset 0 0 0 5px rgba(255,255,255,.08); }
+.door.l { left: 0; transform-origin: left center; box-shadow: inset -2px 0 0 var(--gold); }
+.door.l::after { border-radius: 0 190px 0 0; border-left-color: transparent; }
+.door.r { right: 0; transform-origin: right center; box-shadow: inset 2px 0 0 var(--gold); }
+.door.r::after { border-radius: 190px 0 0 0; border-right-color: transparent; }
+#gate.swing .door.l { transform: rotateY(-115deg); }
+#gate.swing .door.r { transform: rotateY(115deg); }
+.light { position: absolute; inset: 0; z-index: 0; opacity: 0; pointer-events: none; background: radial-gradient(55% 45% at 50% 40%, rgba(255,232,180,.8), rgba(255,200,150,.25) 55%, transparent 80%); transition: opacity 1.9s ease; }
+#gate.swing .light { opacity: 1; animation: lightfade 1.9s ease forwards; }
+@keyframes lightfade { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+#gateFx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9; }
+.gate-title, .env, .gate-hint { position: relative; z-index: 2; }
+.gate-title { color: #8a5a1c; transition: opacity .5s ease; }
+.gate-title .script { font-size: 2.6rem; line-height: 1.1; display: block; color: var(--wine); margin-top: 6px; }
+.gate-hint { color: var(--wine); font-size: .85rem; letter-spacing: .08em; transition: opacity .4s ease; }
+.env { position: relative; width: min(290px, 78vw); aspect-ratio: 5 / 6; perspective: 900px; cursor: pointer; border: 0; background: none; padding: 0; }
+.env .back { position: absolute; inset: 0; background: #b8697a; border-radius: 6px; box-shadow: 0 24px 50px rgba(91,26,46,.5); }
+.env .glow { position: absolute; left: 50%; top: 40%; width: 12px; height: 12px; margin: -6px; border-radius: 50%; opacity: 0; pointer-events: none;
+  background: radial-gradient(circle, #fff8d8 0%, rgba(232,210,154,.7) 38%, transparent 70%); }
+.env.open .glow { animation: burst 1.8s ease-out forwards; }
+@keyframes burst { 0% { opacity: 0; transform: scale(1); } 18% { opacity: 1; } 100% { opacity: 0; transform: scale(70); } }
+.env .card {
+  position: absolute; left: 7%; right: 7%; top: 6%; bottom: 6%;
+  background: var(--paper); border-radius: 4px; display: grid; place-items: center; text-align: center;
+  transition: transform 1.1s cubic-bezier(.2,.7,.2,1) .55s; padding: 10px;
+}
+.env .card .script { font-size: 1.7rem; color: var(--wine); line-height: 1.1; }
+.env .front {
+  position: absolute; inset: 0; border-radius: 6px;
+  background:
+    linear-gradient(155deg, transparent 49.6%, #b46f7e 50%) left / 51% 100% no-repeat,
+    linear-gradient(205deg, transparent 49.6%, #b46f7e 50%) right / 51% 100% no-repeat,
+    linear-gradient(0deg, #d49ba7 0 48%, transparent 48%),
+    linear-gradient(#c98592, #c98592);
+  clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0, 50% 52%);
+}
+.env .front::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, #d9a4af 0 100%); clip-path: polygon(0 100%, 50% 46%, 100% 100%); }
+.env .flap {
+  position: absolute; left: 0; right: 0; top: 0; height: 52%; z-index: 4;
+  transform-origin: top; transition: transform .9s ease, z-index 0s .45s;
+  filter: drop-shadow(0 1.5px 0 #c9a24a) drop-shadow(0 5px 4px rgba(0,0,0,.25));
+}
+.env .flap i { display: block; width: 100%; height: 100%; clip-path: polygon(0 0, 100% 0, 50% 100%); background: linear-gradient(180deg, #ecc0c8, #d99aa7); }
+.env .seal {
+  position: absolute; left: 50%; top: 52%; width: 62px; height: 62px; margin: -31px 0 0 -31px; z-index: 5; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f1dc9c, var(--gold) 55%, #8f6c22);
+  box-shadow: 0 4px 10px rgba(0,0,0,.4), inset 0 0 0 4px rgba(255,255,255,.15);
+  display: grid; place-items: center; font-family: var(--display); font-size: 1.7rem; color: #6d4f10;
+  transition: opacity .35s ease, transform .35s ease;
+  animation: pulse 2.2s ease-in-out infinite;
+}
+@keyframes pulse { 50% { transform: scale(1.07); } }
+@keyframes shake { 0%, 100% { transform: translate(0,0) rotate(0); } 20% { transform: translate(-3px,1px) rotate(-6deg); } 40% { transform: translate(3px,-1px) rotate(6deg); } 60% { transform: translate(-2px,0) rotate(-4deg); } 80% { transform: translate(2px,1px) rotate(3deg); } }
+.env.crack .seal { animation: shake .38s linear; }
+.env.open .seal { opacity: 0; transform: scale(.4) translateY(-14px); animation: none; }
+.env.open .flap { transform: rotateX(180deg); z-index: 1; }
+.env.open .card { transform: translateY(-46%); }
+#gate.zoom .env { transform: scale(3); opacity: 0; transition: transform 1s cubic-bezier(.55,0,.25,1), opacity .8s ease .2s; }
+#gate.zoom .gate-title, #gate.zoom .gate-hint { opacity: 0; }
+.skip { position: absolute; z-index: 10; color: var(--wine) !important; right: max(16px, env(safe-area-inset-right, 0px)); top: max(14px, env(safe-area-inset-top, 0px)); background: none; border: 0; color: var(--rose); font-size: .8rem; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; min-height: 36px; }
+
+/* ---------- Main column ---------- */
+main { max-width: 480px; margin: 0 auto; }
+.hero { padding: 56px 0 48px; text-align: center; color: #fff; position: relative; background: radial-gradient(90% 60% at 50% 38%, #5e2c4d 0%, transparent 70%); }
+.arch {
+  margin: 0 auto; width: min(340px, 92%); padding: 60px 20px 96px; position: relative; overflow: hidden; isolation: isolate;
+  border-radius: 999px 999px 14px 14px; border: 1px solid rgba(232,210,154,.75);
+  background:
+    radial-gradient(70% 18% at 50% 92%, rgba(255,205,150,.85), transparent 75%),
+    linear-gradient(180deg, #0f1a44 0%, #25306f 28%, #53387a 52%, #8a4672 74%, #e39a80 90%, #2a1626 90.5%, #1a0c16 100%);
+  box-shadow: 0 0 0 7px rgba(232,210,154,.1), 0 30px 60px rgba(0,0,0,.5);
+}
+.arch::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255,226,190,.28) 0 7%, rgba(40,20,40,.35) 7% 8%, transparent 8% 92%, rgba(40,20,40,.35) 92% 93%, rgba(255,226,190,.28) 93% 100%),
+    linear-gradient(90deg, rgba(150,45,80,.8), rgba(150,45,80,0) 26%, rgba(150,45,80,0) 74%, rgba(150,45,80,.8)); }
+.arch::after { content: ""; position: absolute; inset: 0 0 40% 0; z-index: -1; pointer-events: none; animation: twinkle 3.6s ease-in-out infinite alternate;
+  background:
+    radial-gradient(circle, #fff 0 1px, transparent 1.6px) 18% 14% / 90px 70px,
+    radial-gradient(circle, #fff 0 1px, transparent 1.6px) 63% 38% / 120px 90px,
+    radial-gradient(circle, #ffe9b8 0 1.2px, transparent 2px) 40% 6% / 150px 110px; }
+@keyframes twinkle { from { opacity: .35; } to { opacity: 1; } }
+.arch .intro { color: var(--gold-soft); font-size: .95rem; letter-spacing: .04em; }
+.arch .person { display: grid; gap: 2px; justify-items: center; }
+.arch .ttl { font-family: var(--head); letter-spacing: .3em; text-transform: uppercase; font-size: .64rem; color: var(--gold-soft); }
+.arch .name { font-size: clamp(2.2rem, 10.5vw, 2.8rem); line-height: 1.1; display: block; }
+.arch .rel { font-size: .74rem; color: #f3d6dc; letter-spacing: .03em; }
+.arch .and { font-family: var(--head); color: var(--gold); letter-spacing: .3em; font-size: .8rem; display: block; margin: 12px 0; }
+.scroll-cue { margin-top: 26px; font-size: .72rem; letter-spacing: .3em; text-transform: uppercase; color: var(--rose); }
+.scroll-cue::after { content: ""; display: block; width: 1px; height: 34px; margin: 10px auto 0; background: linear-gradient(var(--rose), transparent); }
+
+.sheet { background: var(--paper); border-radius: 28px 28px 0 0; padding: 56px 22px 28px; margin: 0 -4px; position: relative; }
+section { padding: 36px 0; text-align: center; border-bottom: 1px solid rgba(91,26,46,.12); }
+section:last-of-type { border-bottom: 0; }
+section h2 { font-family: var(--display); font-weight: 400; font-size: 2.6rem; color: var(--wine); line-height: 1.15; margin-bottom: 8px; }
+section .lead { color: var(--ink-soft); max-width: 36ch; margin: 0 auto; font-size: .95rem; }
+
+/* scratch */
+.scratch-wrap { position: relative; width: min(300px, 86%); aspect-ratio: 100 / 90; margin: 22px auto 6px; touch-action: none; }
+.scratch-wrap svg, .scratch-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.scratch-wrap canvas { cursor: grab; touch-action: none; transition: opacity 1s ease; }
+.scratch-wrap.done canvas { opacity: 0; pointer-events: none; }
+.date-in-heart { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; color: var(--wine); padding-bottom: 8%; }
+.date-in-heart small { font-family: var(--head); letter-spacing: .24em; text-transform: uppercase; font-size: .62rem; color: var(--ink-soft); }
+.date-in-heart b { font-family: var(--display); font-weight: 400; font-size: 2.1rem; line-height: 1.1; }
+.date-in-heart span { font-size: .8rem; color: var(--ink-soft); }
+.reveal-btn { background: none; border: 0; color: var(--ink-soft); font-size: .8rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; min-height: 32px; }
+.petal { position: fixed; top: -20px; width: 10px; height: 14px; border-radius: 80% 0 80% 0; background: var(--rose); z-index: 40; pointer-events: none; animation: fall linear forwards; }
+@keyframes fall { to { transform: translateY(110vh) rotate(540deg); opacity: .2; } }
+
+/* countdown */
+.count { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 22px; }
+.count div { background: #fff; border: 1px solid rgba(91,26,46,.14); border-radius: 12px; padding: 14px 4px 10px; }
+.count b { display: block; font-family: var(--head); font-size: 1.9rem; line-height: 1; color: var(--wine); font-variant-numeric: tabular-nums; }
+.count span { font-size: .62rem; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); }
+
+/* events: each card has its own mood */
+.events { display: grid; gap: 18px; margin-top: 24px; text-align: left; }
+.event { position: relative; overflow: hidden; border-radius: 18px; border: 1px solid rgba(91,26,46,.12); background: #fff; isolation: isolate; }
+.event .fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.event .in { position: relative; z-index: 1; display: grid; gap: 6px; padding: 24px 20px; }
+.event .tag { font-family: var(--head); font-size: .68rem; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-soft); }
+.event h3 { font-family: var(--display); font-weight: 400; font-size: 2.4rem; color: var(--wine); line-height: 1.1; }
+.event .when { font-weight: 600; font-size: .95rem; text-wrap: wrap; }
+.event .where { color: var(--ink-soft); font-size: .92rem; }
+.event .note { font-size: .88rem; color: var(--ink-soft); }
+.event .mood { font-size: .74rem; letter-spacing: .08em; color: var(--ink-soft); display: flex; align-items: center; gap: 8px; }
+.event .mood::before { content: ""; width: 18px; height: 1px; background: currentColor; }
+.links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border-radius: 999px; font-size: .88rem; font-weight: 600; text-decoration: none; cursor: pointer; border: 1px solid var(--wine); }
+.btn.solid { background: var(--wine); color: #fff; }
+.btn.line { background: transparent; color: var(--wine); }
+
+.t-mehndi { background: linear-gradient(160deg, #fff6d8 0%, #ffe39a 55%, #c9dfa8 100%); border-color: #e2c564; }
+.t-mehndi h3 { color: #4d5a14; }
+.t-mehndi .btn.solid { background: #4d5a14; border-color: #4d5a14; }
+.t-mehndi .btn.line { color: #4d5a14; border-color: #4d5a14; }
+
+.t-shadi { background: linear-gradient(180deg, #0d0a26 0%, #2b1240 60%, #5b1a2e 100%); border-color: #3d2a5c; }
+.t-shadi h3 { color: var(--gold-soft); }
+.t-shadi .tag, .t-shadi .mood { color: #cdb8d6; }
+.t-shadi .when { color: #fff; }
+.t-shadi .where, .t-shadi .note { color: #e0cfe0; }
+.t-shadi .btn.solid { background: var(--gold); border-color: var(--gold); color: #2a0d18; }
+.t-shadi .btn.line { color: var(--gold-soft); border-color: var(--gold-soft); }
+
+.t-valima { background: linear-gradient(160deg, #fffaf0 0%, #f5e4bd 100%); border-color: #e1c987; }
+
+/* detail blocks */
+.details { display: grid; gap: 14px; margin-top: 22px; text-align: left; }
+.details > div { background: #fff; border-radius: 14px; padding: 18px; border: 1px solid rgba(91,26,46,.12); }
+.details h3 { font-family: var(--head); font-weight: 400; letter-spacing: .16em; text-transform: uppercase; font-size: .78rem; color: var(--wine); margin-bottom: 4px; }
+.details p { font-size: .92rem; color: var(--ink-soft); }
+.details p + p { margin-top: 6px; }
+.swatches { display: flex; gap: 8px; margin-top: 12px; }
+.swatches i { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(0,0,0,.12); display: block; }
+
+/* rsvp */
+form { text-align: left; display: grid; gap: 16px; margin-top: 22px; }
+label, legend { font-size: .8rem; font-weight: 600; letter-spacing: .06em; color: var(--wine); }
+fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; min-width: 0; }
+input[type=text], input[type=number], textarea { width: 100%; margin-top: 6px; background: #fff; border: 1px solid rgba(91,26,46,.25); border-radius: 10px; padding: 12px 14px; min-height: 46px; color: var(--ink); }
+textarea { min-height: 96px; resize: vertical; }
+.choice { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px; background: #fff; border: 1px solid rgba(91,26,46,.2); border-radius: 10px; font-weight: 400; letter-spacing: 0; font-size: .95rem; color: var(--ink); }
+.choice input { accent-color: var(--wine); width: 18px; height: 18px; }
+.form-msg { font-size: .85rem; color: #9a1f3d; min-height: 1.2em; }
+.fine { font-size: .78rem; color: var(--ink-soft); }
+footer { padding: 34px 0 max(84px, env(safe-area-inset-bottom, 0px)); text-align: center; background: var(--paper); margin: 0 -4px; }
+footer .script { font-size: 2.2rem; color: var(--wine); }
+footer p { font-size: .8rem; color: var(--ink-soft); }
+
+/* sound toggle */
+.snd { position: fixed; z-index: 30; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--gold); background: rgba(42,13,24,.92); color: var(--gold-soft);
+  font-size: .82rem; font-weight: 600; letter-spacing: .04em; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .rise { animation: rise .9s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(16px); } }
+}
+@media (prefers-reduced-motion: reduce) { .env .card, .env .flap, #gate, .scratch-wrap canvas, #gate.zoom .env { transition: none; } .seal { animation: none !important; } .env.open .glow { animation: none; } }
+</style>
+
+<div id="gate" role="dialog" aria-label="Wedding invitation">
+  <div class="light" aria-hidden="true"></div>
+  <div class="door l" aria-hidden="true"></div><div class="door r" aria-hidden="true"></div>
+  <canvas id="gateFx" aria-hidden="true"></canvas>
+  <button class="skip" id="skip" type="button">Skip</button>
+  <p class="eyebrow gate-title">You are invited<span class="script" id="gateNames"></span></p>
+  <button class="env" id="env" type="button" aria-label="Open the invitation">
+    <div class="back"></div>
+    <div class="glow"></div>
+    <div class="card"><div><div class="eyebrow" style="color:var(--ink-soft)">The wedding of</div><div class="script" id="cardNames"></div></div></div>
+    <div class="front"></div>
+    <div class="flap"><i></i></div>
+    <div class="seal" id="sealMono"></div>
+  </button>
+  <p class="gate-hint">Tap the seal to open the gate. Sound will play.</p>
+</div>
+
+<main>
+  <header class="hero">
+    <div class="arch rise">
+      <p class="intro script" style="font-size:1.5rem" id="introLine"></p>
+      <p class="eyebrow" style="margin:14px 0 10px">The wedding celebrations of</p>
+      <div class="person"><span class="ttl" id="t1"></span><span class="name script" id="n1"></span><span class="rel" id="r1"></span></div>
+      <span class="and">&amp;</span>
+      <div class="person"><span class="ttl" id="t2"></span><span class="name script" id="n2"></span><span class="rel" id="r2"></span></div>
+    </div>
+    <p class="scroll-cue">Scroll</p>
+  </header>
+
+  <div class="sheet">
+    <section id="date">
+      <h2>Scratch to reveal</h2>
+      <p class="lead">Rub the heart with your finger to see the date.</p>
+      <div class="scratch-wrap" id="scratchWrap">
+        <svg viewBox="0 0 100 90" aria-hidden="true"><path d="M50 88C10 55 0 30 0 22 0 8 12 0 26 0 38 0 46 8 50 16 54 8 62 0 74 0 88 0 100 8 100 22 100 30 90 55 50 88Z" fill="#fff" stroke="#d99aa6" stroke-width="1"/></svg>
+        <div class="date-in-heart"><small id="heartLabel">Save the date</small><b id="bigDate"></b><span id="bigYear"></span></div>
+        <canvas id="scratch" aria-hidden="true"></canvas>
+      </div>
+      <button class="reveal-btn" id="revealBtn" type="button">Reveal without scratching</button>
+    </section>
+
+    <section id="countdown">
+      <h2 id="cdTitle">Counting down</h2>
+      <div class="count">
+        <div><b id="cd">0</b><span>Days</span></div>
+        <div><b id="ch">0</b><span>Hours</span></div>
+        <div><b id="cm">0</b><span>Minutes</span></div>
+        <div><b id="cs">0</b><span>Seconds</span></div>
+      </div>
+    </section>
+
+    <section id="events">
+      <h2 id="evTitle">The celebrations</h2>
+      <p class="lead" id="evLead"></p>
+      <div class="events" id="eventList"></div>
+    </section>
+
+    <section id="info">
+      <h2>Good to know</h2>
+      <div class="details" id="infoList"></div>
+    </section>
+
+  </div>
+
+  <footer>
+    <p class="script" id="footNames"></p>
+    <p id="footLine"></p>
+  </footer>
+</main>
+
+<button class="snd" id="snd" type="button" aria-pressed="false" hidden>Sound on</button>
+
+<script>
+/* ============ EDIT THIS BLOCK ============ */
+/* Names, family lines and the WhatsApp number are samples. Replace them with your real details. */
+const INVITE = {
+  groom: { title: "Engineer", name: "Syed Aoj Baqar Rizvi", short: "Aoj", rel: "S/O Syed Baqar Zahir Rizvi" },
+  bride: { title: "Engineer", name: "Syeda Mehwar Batool", short: "Mehwar", rel: "D/O Syed Ali Muzaffar" },
+  intro: "With joy in our hearts",
+  whatsapp: "923001234567",          // not used while the RSVP form is removed
+  footer: "With love and duas, the families of Syed Baqar Zahir Rizvi and Syed Ali Muzaffar",
+  eventKeys: ["mehndi", "shadi", "valima"],   // which events this version of the invitation shows
+  events: {
+    mehndi: { name: "Mehndi", tag: "Evening of henna", scene: "mehndi",
+      start: "2026-12-11T18:00:00+05:00", end: "2026-12-11T22:00:00+05:00", timeLabel: "6:00 PM onwards",
+      venue: "Gadap", address: "Karachi", mood: "Qawali and henna",
+      note: "Come in yellow and green." },
+    shadi: { name: "Shadi", tag: "The wedding day", scene: "shadi",
+      start: "2026-12-19T14:00:00+05:00", end: "2026-12-19T17:00:00+05:00", timeLabel: "2:00 PM to 5:00 PM",
+      venue: "Shadi Qila Banquet", address: "Karachi", mood: "Fireworks",
+      note: "" },
+    valima: { name: "Valima", tag: "Reception", scene: "valima",
+      start: "2026-12-24T19:00:00+05:00", end: "2026-12-24T22:00:00+05:00", timeLabel: "7:00 PM onwards",
+      venue: "Majestic Banquet", address: "Karachi", mood: "Soft evening music",
+      note: "" }
+  },
+  dress: {
+    mehndi: "Mehndi: yellow and green, bright and festive.",
+    shadi: "Shadi: formal, in pastels or jewel tones.",
+    valima: "Valima: elegant, in ivory, champagne or soft pastels."
+  },
+  swatches: { mehndi: ["#f2c230", "#3f7a3a"], shadi: ["#d99aa6", "#5b1a2e"], valima: ["#f5e4bd", "#c9a24a"] }
+};
+/* ============ END EDIT BLOCK ============ */
+
+const $ = (id) => document.getElementById(id);
+const EVS = INVITE.eventKeys.map((k) => ({ key: k, ...INVITE.events[k] }));
+const names = `${INVITE.groom.short} & ${INVITE.bride.short}`;
+const hasShadi = INVITE.eventKeys.includes("shadi");
+$("gateNames").textContent = names;
+$("cardNames").textContent = names;
+$("sealMono").textContent = INVITE.groom.short[0] + INVITE.bride.short[0];
+$("introLine").textContent = INVITE.intro;
+[["1", INVITE.groom], ["2", INVITE.bride]].forEach(([k, p]) => { $("t" + k).textContent = p.title; $("n" + k).textContent = p.name; $("r" + k).textContent = p.rel; });
+$("footNames").textContent = names;
+$("footLine").textContent = INVITE.footer;
+
+const TZ = "Asia/Karachi";
+const fmtDate = (d) => d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: TZ });
+const mapUrl = (q) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+const calUrl = (e) => {
+  const s = new Date(e.start), t = new Date(e.end || s.getTime() + 4 * 3600e3);
+  const z = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`${e.name}: ${names}`) +
+    `&dates=${z(s)}/${z(t)}&location=` + encodeURIComponent(`${e.venue}, ${e.address}`);
+};
+
+/* headline date in the heart: the Shadi if this invitation includes it, otherwise the first event */
+const heroEv = EVS.find((e) => e.key === "shadi") || EVS.find((e) => e.key === "valima") || EVS[0];
+const hd = new Date(heroEv.start);
+$("heartLabel").textContent = heroEv.key === "valima" && EVS.length > 1 ? "Valima date" : (EVS.length === 1 ? `${heroEv.name} date` : "Save the date");
+$("bigDate").textContent = hd.toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: TZ });
+$("bigYear").textContent = hd.toLocaleDateString("en-GB", { weekday: "long", year: "numeric", timeZone: TZ });
+$("cdTitle").textContent = hasShadi ? "Counting down to forever" : `Counting down to the ${EVS[0].name}`;
+$("evTitle").textContent = EVS.length === 1 ? "You are invited" : "The celebrations";
+$("evLead").textContent = EVS.length === 1
+  ? "Here is the time and place. We would love to see you there."
+  : "Every event is below with its time and place. Please join us for each one.";
+
+/* ---------- event cards ---------- */
+EVS.forEach((e) => {
+  const d = new Date(e.start);
+  const el = document.createElement("article");
+  el.className = "event t-" + e.key;
+  el.dataset.scene = e.scene;
+  el.innerHTML = `<canvas class="fx" aria-hidden="true"></canvas><div class="in"><span class="tag"></span><h3></h3><p class="when"></p><p class="where"></p><p class="note"></p><p class="mood"></p>
+    <div class="links"><a class="btn solid" target="_blank" rel="noopener">View map</a><a class="btn line" target="_blank" rel="noopener">Add to calendar</a></div></div>`;
+  el.querySelector(".tag").textContent = e.tag;
+  el.querySelector("h3").textContent = e.name;
+  el.querySelector(".when").textContent = `${fmtDate(d)}, ${e.timeLabel}`;
+  el.querySelector(".where").textContent = `${e.venue}, ${e.address}`;
+  el.querySelector(".note").textContent = e.note || "";
+  el.querySelector(".note").hidden = !e.note;
+  el.querySelector(".mood").textContent = e.mood; el.querySelector(".mood").hidden = !e.mood;
+  const [a, b] = el.querySelectorAll("a");
+  a.href = mapUrl(`${e.venue} ${e.address}`);
+  b.href = calUrl(e);
+  $("eventList").appendChild(el);
+
+});
+
+/* ---------- details ---------- */
+(function () {
+  const dir = document.createElement("div");
+  dir.innerHTML = `<h3>Directions</h3><p>Tap View map on any event card to open the venue in Google Maps.</p>`;
+  $("infoList").append(dir);
+})();
+
+/* ---------- countdown ---------- */
+const target = new Date(EVS[0].start).getTime();
+function tick() {
+  const s = Math.max(0, Math.floor((target - Date.now()) / 1000));
+  $("cd").textContent = Math.floor(s / 86400);
+  $("ch").textContent = String(Math.floor(s % 86400 / 3600)).padStart(2, "0");
+  $("cm").textContent = String(Math.floor(s % 3600 / 60)).padStart(2, "0");
+  $("cs").textContent = String(s % 60).padStart(2, "0");
+}
+tick(); setInterval(tick, 1000);
+
+let entered = false;
+/* =====================================================
+   SOUND: made live in the browser (no audio files).
+   mehndi = qawali-style harmonium, dholak and clapping
+   shadi  = dhol and shehnai, with a boom for every firework
+   valima = soft pads and plucked strings
+   ===================================================== */
+const Snd = (() => {
+  let ac, master, fx, noise, bus = null, stopFn = null, cur = null, S = null, timer = null, nextT = 0, step = 0, muted = false;
+  const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+
+  function init() {
+    if (ac) return true;
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return false;
+    ac = new C();
+    master = ac.createGain(); master.gain.value = muted ? 0 : 0.9;
+    const comp = ac.createDynamicsCompressor(); master.connect(comp); comp.connect(ac.destination);
+    fx = ac.createGain();
+    const d = ac.createDelay(1); d.delayTime.value = 0.31;
+    const fb = ac.createGain(); fb.gain.value = 0.35;
+    const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 2400;
+    fx.connect(d); d.connect(lp); lp.connect(fb); fb.connect(d); lp.connect(master);
+    noise = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+    const ch = noise.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+    return true;
+  }
+  function tone(dest, t, f, dur, o = {}) {
+    const { type = "sine", gain = 0.2, a = 0.01, r = 0.15, lp, vib, send = 0 } = o;
+    const osc = ac.createOscillator(); osc.type = type; osc.frequency.setValueAtTime(f, t);
+    if (vib) {
+      const l = ac.createOscillator(), lg = ac.createGain();
+      l.frequency.value = 5.2; lg.gain.value = f * 0.011; l.connect(lg); lg.connect(osc.frequency); l.start(t); l.stop(t + dur + r + 0.1);
+    }
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(gain, t + a);
+    g.gain.setValueAtTime(gain, t + Math.max(a, dur));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur + r);
+    let n = osc;
+    if (lp) { const f1 = ac.createBiquadFilter(); f1.type = "lowpass"; f1.frequency.value = lp; osc.connect(f1); n = f1; }
+    n.connect(g); g.connect(dest);
+    if (send) { const s = ac.createGain(); s.gain.value = send; g.connect(s); s.connect(fx); }
+    osc.start(t); osc.stop(t + dur + r + 0.1);
+  }
+  function thump(dest, t, f0, f1, gain, dur = 0.25) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(dest); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function hiss(dest, t, dur, gain, freq, q = 1, type = "bandpass") {
+    const s = ac.createBufferSource(); s.buffer = noise;
+    const f = ac.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+    const g = ac.createGain(); g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f); f.connect(g); g.connect(dest); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.02);
+  }
+  function drone(dest, notes, gain, lpf) {
+    const stops = [];
+    const g = ac.createGain(); g.gain.value = gain; g.connect(dest);
+    const f = ac.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = lpf; f.connect(g);
+    const trem = ac.createOscillator(), tg = ac.createGain(); trem.frequency.value = 4.5; tg.gain.value = gain * 0.12; trem.connect(tg); tg.connect(g.gain); trem.start();
+    stops.push(() => trem.stop());
+    notes.forEach((m) => {
+      [0, 4].forEach((det) => {
+        const o = ac.createOscillator(); o.type = "sawtooth"; o.frequency.value = hz(m); o.detune.value = det; o.connect(f); o.start(); stops.push(() => o.stop());
+      });
+    });
+    return () => stops.forEach((s) => { try { s(); } catch (e) {} });
+  }
+
+  const D = 62; /* D4 as the home note */
+  const scenes = {
+    mehndi: {
+      dur: 60 / 104 / 2,
+      start: (dest) => drone(dest, [D - 12, D - 5, D], 0.035, 1100),
+      step: (i, t, dest) => {
+        const s = i % 16;
+        if ([0, 5, 8, 13].includes(s)) thump(dest, t, 120, 55, 0.55, 0.3);
+        if ([2, 6, 10, 14].includes(s)) { thump(dest, t, 300, 210, 0.14, 0.12); hiss(dest, t, 0.05, 0.12, 3200, 2); hiss(dest, t, 0.09, 0.4, 1900, 0.7); }
+        if (s === 15) hiss(dest, t, 0.07, 0.3, 2100, 0.7);
+        const phrase = { 0: [D, 3], 3: [D + 1, 1], 4: [D + 3, 2], 6: [D + 5, 2], 8: [D + 7, 3], 11: [D + 5, 1], 12: [D + 3, 2], 14: [D + 1, 1], 15: [D, 1] };
+        if (phrase[s]) { const [m, len] = phrase[s]; tone(dest, t, hz(m), len * 0.288 * 0.95, { type: "sawtooth", gain: 0.07, a: 0.03, r: 0.12, lp: 1700, vib: true, send: 0.3 }); }
+      }
+    },
+    shadi: {
+      dur: 60 / 112 / 2,
+      start: (dest) => drone(dest, [D - 12, D - 5], 0.025, 900),
+      step: (i, t, dest) => {
+        const s = i % 16;
+        if ([0, 3, 8, 11].includes(s)) thump(dest, t, 90, 42, 0.6, 0.35);
+        if ([2, 4, 6, 10, 12, 14].includes(s)) hiss(dest, t, 0.04, 0.16, 4200, 3);
+        const ph = { 0: [D + 7, 6], 8: [D + 5, 2], 10: [D + 3, 2], 12: [D + 1, 3] };
+        if (ph[s]) { const [m, len] = ph[s]; tone(dest, t, hz(m + 12), len * 0.268, { type: "sawtooth", gain: 0.045, a: 0.08, r: 0.2, lp: 2300, vib: true, send: 0.35 }); }
+      }
+    },
+    valima: {
+      dur: 60 / 72 / 2,
+      step: (i, t, dest) => {
+        const s = i % 16, bar = Math.floor(i / 16) % 4;
+        if (s === 0) {
+          const chords = [[50, 57, 62, 66], [47, 54, 62, 66], [43, 55, 62, 67], [45, 57, 61, 64]][bar];
+          chords.forEach((m) => tone(dest, t, hz(m), 5.2, { type: "triangle", gain: 0.05, a: 1.4, r: 1.6, lp: 1400, send: 0.4 }));
+        }
+        if (s % 2 === 0) {
+          const pent = [62, 64, 66, 69, 71, 74, 71, 69];
+          const m = pent[(i / 2 + bar) % 8 | 0];
+          tone(dest, t, hz(m + (s % 8 === 0 ? 0 : 12)), 0.12, { type: "sine", gain: 0.085, a: 0.005, r: 0.9, send: 0.55 });
+        }
+      }
+    }
+  };
+
+  function pump() {
+    if (!ac || !S || ac.state !== "running") return;
+    while (nextT < ac.currentTime + 0.25) { S.step(step, nextT, bus); nextT += S.dur; step++; }
+  }
+  function setScene(name) {
+    if (!ac || name === cur || !scenes[name]) return;
+    cur = name;
+    const now = ac.currentTime;
+    if (bus) { const ob = bus, os = stopFn; ob.gain.setTargetAtTime(0, now, 0.4); setTimeout(() => { try { os && os(); ob.disconnect(); } catch (e) {} }, 2500); }
+    bus = ac.createGain(); bus.gain.value = 0; bus.connect(master); bus.gain.setTargetAtTime(1, now + 0.05, 0.7);
+    S = scenes[name]; stopFn = S.start ? S.start(bus) : null; step = 0; nextT = now + 0.15;
+    if (!timer) timer = setInterval(pump, 60);
+  }
+  function boom() {
+    if (!ac || muted || cur !== "shadi" || ac.state !== "running") return;
+    const t = ac.currentTime + 0.02;
+    hiss(bus, t - 0.02, 0.5, 0.15, 1800, 1.2);        /* launch whoosh */
+    thump(bus, t + 0.05, 110, 30, 0.9, 0.6);          /* the boom */
+    hiss(bus, t + 0.05, 0.7, 0.5, 600, 0.5, "lowpass");
+    for (let k = 0; k < 7; k++) hiss(bus, t + 0.2 + Math.random() * 0.9, 0.04, 0.35, 5000 + Math.random() * 3000, 4);   /* crackle */
+  }
+  return {
+    start() { if (!init()) return false; if (ac.state === "suspended") ac.resume(); return true; },
+    scene: setScene, boom,
+    get on() { return !!ac; },
+    setMuted(m) { muted = m; if (master) master.gain.setTargetAtTime(m ? 0 : 0.9, ac.currentTime, 0.15); },
+    pause() { if (ac && ac.state === "running") ac.suspend(); },
+    resume() { if (ac && !muted && ac.state === "suspended") ac.resume(); }
+  };
+})();
+
+/* ---------- visual moods inside each event card ---------- */
+const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function mood(card, kind) {
+  const cv = card.querySelector(".fx"), c = cv.getContext("2d");
+  let W = 0, H = 0, dpr = 1, raf = 0, last = 0, items = [], rockets = [], nextRocket = 0;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function size() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const r = card.getBoundingClientRect(); W = cv.width = Math.round(r.width * dpr); H = cv.height = Math.round(r.height * dpr);
+    items = [];
+    if (kind === "mehndi") for (let i = 0; i < 18; i++) items.push({ x: rnd(0, W), y: rnd(0, H), s: rnd(5, 9) * dpr, v: rnd(18, 40) * dpr, ph: rnd(0, 6), col: ["#f2a900", "#e8761b", "#6a9a3a", "#f7d046"][i % 4] });
+    if (kind === "valima") for (let i = 0; i < 34; i++) items.push({ x: rnd(0, W), y: rnd(0, H), s: rnd(1, 3.2) * dpr, v: rnd(4, 12) * dpr, ph: rnd(0, 6) });
+  }
+  function frame(ts) {
+    raf = requestAnimationFrame(frame);
+    const dt = Math.min(0.05, (ts - (last || ts)) / 1000); last = ts;
+    c.clearRect(0, 0, W, H);
+    if (kind === "mehndi") items.forEach((p) => {
+      p.y += p.v * dt; p.ph += dt * 1.6; if (p.y > H + 12) { p.y = -12; p.x = rnd(0, W); }
+      c.save(); c.translate(p.x + Math.sin(p.ph) * 14 * dpr, p.y); c.rotate(p.ph); c.fillStyle = p.col; c.globalAlpha = 0.75;
+      c.beginPath(); c.ellipse(0, 0, p.s, p.s * 0.55, 0, 0, 6.3); c.fill(); c.restore();
+    });
+    if (kind === "valima") items.forEach((p) => {
+      p.ph += dt * 2; p.y -= p.v * dt; if (p.y < -6) { p.y = H + 6; p.x = rnd(0, W); }
+      const a = 0.25 + 0.55 * Math.abs(Math.sin(p.ph)); c.globalAlpha = a; c.fillStyle = "#c9a24a";
+      c.beginPath(); c.arc(p.x, p.y, p.s, 0, 6.3); c.fill();
+      c.globalAlpha = a * 0.6; c.fillRect(p.x - p.s * 2.4, p.y - 0.4 * dpr, p.s * 4.8, 0.8 * dpr); c.fillRect(p.x - 0.4 * dpr, p.y - p.s * 2.4, 0.8 * dpr, p.s * 4.8);
+    });
+    if (kind === "shadi") {
+      nextRocket -= dt;
+      if (nextRocket <= 0) { nextRocket = rnd(0.9, 1.7); rockets.push({ x: rnd(0.15, 0.85) * W, y: H, ty: rnd(0.12, 0.45) * H, t: 0 }); }
+      rockets = rockets.filter((r) => {
+        r.t += dt; const k = Math.min(1, r.t / 0.9), y = H + (r.ty - H) * (1 - Math.pow(1 - k, 2));
+        c.globalAlpha = 0.9; c.strokeStyle = "#ffe9a8"; c.lineWidth = 2 * dpr; c.beginPath(); c.moveTo(r.x, y); c.lineTo(r.x, y + 14 * dpr); c.stroke();
+        if (k >= 1) {
+          const hue = rnd(0, 360), n = 64;
+          for (let i = 0; i < n; i++) { const a = (i / n) * 6.283, sp = rnd(90, 230) * dpr; items.push({ x: r.x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: rnd(1.1, 1.9), age: 0, hue: hue + rnd(-20, 20) }); }
+          Snd.boom(); return false;
+        }
+        return true;
+      });
+      items = items.filter((p) => {
+        p.age += dt; if (p.age > p.life) return false;
+        p.vy += 70 * dpr * dt; p.vx *= 0.985; p.vy *= 0.985; const px = p.x, py = p.y; p.x += p.vx * dt; p.y += p.vy * dt;
+        c.globalAlpha = 1 - p.age / p.life; c.strokeStyle = `hsl(${p.hue},95%,65%)`; c.lineWidth = 2 * dpr; c.beginPath(); c.moveTo(px, py); c.lineTo(p.x, p.y); c.stroke();
+        return true;
+      });
+    }
+  }
+  function run(on) { if (calm) return; if (on && !raf) { size(); last = 0; raf = requestAnimationFrame(frame); } else if (!on && raf) { cancelAnimationFrame(raf); raf = 0; c.clearRect(0, 0, W, H); } }
+  new IntersectionObserver((en) => run(en[0].isIntersecting), { threshold: 0.15 }).observe(card);
+  addEventListener("resize", () => { if (raf) size(); });
+}
+document.querySelectorAll(".event").forEach((card) => mood(card, card.dataset.scene));
+
+/* ---------- pick the music for the card on screen ---------- */
+const vis = new Map();
+function bestScene() {
+  let best = null, r = 0.2;
+  vis.forEach((v, k) => { if (v > r) { r = v; best = k; } });
+  return best;
+}
+const sceneIO = new IntersectionObserver((entries) => {
+  entries.forEach((e) => vis.set(e.target.dataset.scene, e.intersectionRatio));
+  if (Snd.on) Snd.scene(bestScene() || EVS[0].scene);
+}, { threshold: [0, 0.2, 0.4, 0.6, 0.8, 1] });
+document.querySelectorAll(".event").forEach((c) => sceneIO.observe(c));
+
+/* sound button */
+let muted = false;
+$("snd").addEventListener("click", () => {
+  muted = !muted; Snd.setMuted(muted);
+  $("snd").textContent = muted ? "Sound off" : "Sound on";
+  $("snd").setAttribute("aria-pressed", String(muted));
+  if (!muted) Snd.resume();
+});
+document.addEventListener("visibilitychange", () => (document.hidden ? Snd.pause() : Snd.resume()));
+
+/* ---------- envelope opening ---------- */
+let opened = false;
+function sparkles() {
+  if (calm) return;
+  const cv = $("gateFx"), c = cv.getContext("2d"), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+  const r = $("env").getBoundingClientRect(), ox = (r.left + r.width / 2) * dpr, oy = (r.top + r.height * 0.4) * dpr;
+  const ps = Array.from({ length: 110 }, () => { const a = Math.random() * 6.283, sp = (60 + Math.random() * 320) * dpr; return { x: ox, y: oy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 90 * dpr, life: 1.2 + Math.random() * 1.4, age: 0, s: (1 + Math.random() * 2.6) * dpr, col: ["#f1dc9c", "#fff6cf", "#d99aa6", "#c9a24a"][Math.floor(Math.random() * 4)] }; });
+  let last = performance.now();
+  (function f(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now; c.clearRect(0, 0, cv.width, cv.height); let alive = 0;
+    ps.forEach((p) => {
+      p.age += dt; if (p.age > p.life) return; alive++;
+      p.vy += 120 * dpr * dt; p.vx *= 0.985; p.x += p.vx * dt; p.y += p.vy * dt;
+      c.globalAlpha = Math.max(0, 1 - p.age / p.life) * (0.5 + 0.5 * Math.sin(p.age * 18)); c.fillStyle = p.col;
+      c.beginPath(); c.arc(p.x, p.y, p.s, 0, 6.3); c.fill();
+    });
+    if (alive) requestAnimationFrame(f); else c.clearRect(0, 0, cv.width, cv.height);
+  })(last);
+}
+function enter() {
+  $("gate").classList.add("gone"); entered = true; $("snd").hidden = false;
+  window.scrollTo(0, 0);
+}
+function startSound() { if (Snd.start()) Snd.scene(bestScene() || EVS[0].scene); }
+$("env").addEventListener("click", () => {
+  if (opened) return; opened = true;
+  startSound();
+  const env = $("env");
+  env.classList.add("crack");
+  setTimeout(() => { env.classList.add("open"); sparkles(); }, 380);
+  setTimeout(() => $("gate").classList.add("zoom"), 2300);
+  setTimeout(() => $("gate").classList.add("swing"), 2900);
+  setTimeout(enter, 4900);
+});
+$("skip").addEventListener("click", () => { opened = true; startSound(); enter(); });
+
+/* ---------- scratch-to-reveal ---------- */
+const cv = $("scratch"), wrap = $("scratchWrap"), ctx = cv.getContext("2d", { willReadFrequently: true });
+let revealed = false;
+const HEART = "M50 88C10 55 0 30 0 22 0 8 12 0 26 0 38 0 46 8 50 16 54 8 62 0 74 0 88 0 100 8 100 22 100 30 90 55 50 88Z";
+function paintCover() {
+  const r = wrap.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+  const k = cv.width / 100;
+  ctx.save(); ctx.scale(k, k);
+  const p = new Path2D(HEART), g = ctx.createLinearGradient(0, 0, 100, 90);
+  g.addColorStop(0, "#e8a6b3"); g.addColorStop(.5, "#c9566f"); g.addColorStop(1, "#e08fa0");
+  ctx.fillStyle = g; ctx.fill(p); ctx.clip(p);
+  for (let i = 0; i < 260; i++) { ctx.fillStyle = Math.random() > .5 ? "rgba(255,255,255,.55)" : "rgba(255,214,225,.4)"; ctx.fillRect(Math.random() * 100, Math.random() * 90, .6, .6); }
+  ctx.restore(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+paintCover();
+addEventListener("resize", () => { if (!revealed) paintCover(); });
+let drawing = false, lastP = null, strokes = 0;
+const pos = (e) => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * cv.width / r.width, y: (e.clientY - r.top) * cv.height / r.height }; };
+function scratchTo(p) {
+  ctx.globalCompositeOperation = "destination-out"; ctx.lineCap = ctx.lineJoin = "round"; ctx.lineWidth = cv.width * 0.13;
+  ctx.beginPath(); ctx.moveTo((lastP || p).x, (lastP || p).y); ctx.lineTo(p.x, p.y); ctx.stroke(); lastP = p;
+}
+function cleared() {
+  const w = cv.width, h = cv.height, d = ctx.getImageData(0, 0, w, h).data, k = cv.width / 100, path = new Path2D(HEART);
+  let total = 0, gone = 0;
+  for (let y = 0; y < h; y += 8) for (let x = 0; x < w; x += 8) if (ctx.isPointInPath(path, x / k, y / k)) { total++; if (d[(y * w + x) * 4 + 3] < 40) gone++; }
+  return total ? gone / total : 0;
+}
+cv.addEventListener("pointerdown", (e) => { drawing = true; cv.setPointerCapture(e.pointerId); lastP = null; scratchTo(pos(e)); });
+cv.addEventListener("pointermove", (e) => { if (!drawing) return; scratchTo(pos(e)); if (++strokes % 12 === 0 && cleared() > 0.5) reveal(); });
+["pointerup", "pointercancel"].forEach((n) => cv.addEventListener(n, () => { drawing = false; lastP = null; if (!revealed && cleared() > 0.5) reveal(); }));
+function reveal() {
+  if (revealed) return; revealed = true;
+  wrap.classList.add("done"); $("revealBtn").hidden = true;
+  if (calm) return;
+  for (let i = 0; i < 26; i++) {
+    const p = document.createElement("i");
+    p.className = "petal"; p.style.left = Math.random() * 100 + "vw";
+    p.style.animationDuration = 3 + Math.random() * 3 + "s"; p.style.animationDelay = Math.random() * .8 + "s";
+    p.style.background = ["#d99aa6", "#c9566f", "#e8d29a"][i % 3];
+    document.body.appendChild(p); setTimeout(() => p.remove(), 7000);
+  }
+}
+$("revealBtn").addEventListener("click", reveal);
+
+</script>
+
+</body></html>
