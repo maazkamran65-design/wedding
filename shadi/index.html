@@ -204,7 +204,7 @@ img{max-width:100%}
   <div class="door l" aria-hidden="true"></div><div class="door r" aria-hidden="true"></div>
   <button class="skip" id="skip" type="button">Skip</button>
   <div class="gc">
-    <p class="small">You are warmly invited to the</p>
+    <p class="small" id="gSmall">You are warmly invited to the</p>
     <p class="gtitle gold" id="gTitle"></p>
     <p class="gnames" id="gNames"></p>
     <button class="seal" id="seal" type="button" aria-label="Open the invitation"><svg viewBox="0 0 40 40" width="38" height="38" aria-hidden="true"><path d="M20 3l7 17-7 17-7-17z" fill="none" stroke="#4a3206" stroke-width="2.2"/><circle cx="20" cy="20" r="3.2" fill="#4a3206"/></svg></button>
@@ -227,7 +227,6 @@ img{max-width:100%}
       <div class="diamond" style="margin:12px 0"><i></i></div>
       <p class="role" id="t2"></p><p class="nm" id="n2"></p>
       <p class="close" id="closing"></p>
-      <div class="chip" id="chip"></div>
     </div>
     <p class="cue">Scroll for more</p>
   </header>
@@ -260,6 +259,7 @@ img{max-width:100%}
   </div>
 
   <footer>
+    <p id="footPre"></p>
     <p class="script" id="footNames"></p>
     <p id="footLine"></p>
   </footer>
@@ -343,16 +343,16 @@ const titleWord = nEv === 1 ? EVS[0].name : nEv === 2 ? `${EVS[0].name} & ${EVS[
 $("invWord").textContent = nEv === 3 ? "Celebrations" : "Invitation";
 $("gNames").textContent = INVITE.groom.short[0] + " & " + INVITE.bride.short[0];
 
+const formal = INVITE.eventKeys.includes("valima");
 $("intro").textContent = INVITE.intro;
+if (formal) {
+  $("intro").innerHTML = "With the grace of<br><b>Mr &amp; Mrs Syed Baqar Rizvi</b><br>request the pleasure of your company at the";
+  $("gSmall").innerHTML = "With the grace of<br>Mr &amp; Mrs Syed Baqar Rizvi<br>request your presence at the";
+  $("footPre").textContent = "With the duas of";
+  $("footLine").textContent = "Thank you for reading. We will be waiting for you.";
+}
 $("closing").textContent = INVITE.closing;
 [["1", INVITE.groom], ["2", INVITE.bride]].forEach(([k, p]) => { $("t" + k).textContent = p.title; $("n" + k).textContent = p.name; });
-EVS.forEach((e) => {
-  const d = new Date(e.start), row = document.createElement("div"), b = document.createElement("b"), sp = document.createElement("span");
-  b.textContent = nEv === 1 ? fmtDate(d) : `${e.name} · ${d.toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: TZ })}`;
-  sp.textContent = `${e.venue}, ${e.address}`;
-  row.className = "row"; row.append(b, sp); $("chip").appendChild(row);
-});
-
 /* ---------- event cards ---------- */
 EVS.forEach((e) => {
   const el = document.createElement("article");
