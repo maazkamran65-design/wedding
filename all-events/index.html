@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="description" content="You are warmly invited to the Mehndi on 10 December, Shadi on 19 December and Valima on 24 December. Tap to open your invitation.">
+<meta name="description" content="You are warmly invited to the Mehndi on 11 December, Shadi on 19 December and Valima on 24 December. Tap to open your invitation.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Aoj &amp; Mehwar">
 <meta property="og:title" content="You are invited: Aoj &amp; Mehwar's Wedding">
-<meta property="og:description" content="You are warmly invited to the Mehndi on 10 December, Shadi on 19 December and Valima on 24 December. Tap to open your invitation.">
+<meta property="og:description" content="You are warmly invited to the Mehndi on 11 December, Shadi on 19 December and Valima on 24 December. Tap to open your invitation.">
 <meta property="og:url" content="https://maazkamran65-design.github.io/wedding/all-events/">
 <meta property="og:image" content="https://maazkamran65-design.github.io/wedding/all-events/preview.jpg">
 <meta property="og:image:width" content="1200">
@@ -77,8 +77,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .gc .small { font: 500 1.1rem/1.4 var(--serif); letter-spacing: .03em; color: var(--f-gold-l); }
 .gc .gtitle { font-size: clamp(3rem, 15vw, 4.2rem); }
 .gc .gtitle.long { font-size: clamp(2.3rem, 11vw, 3.1rem); }
-.gc .gnames { font: 700 clamp(1.5rem, 7vw, 2rem)/1.2 var(--serif); color: var(--f-ivory); }
-.seal { width: 96px; height: 96px; border-radius: 50%; border: 0; cursor: pointer; background: radial-gradient(circle at 35% 30%, #fff1c4, var(--f-gold) 55%, #7d5a14); box-shadow: 0 0 0 6px rgba(227,190,106,.25), 0 10px 30px rgba(0,0,0,.6); font: 700 1.45rem var(--serif); letter-spacing: .02em; color: #4a3206; animation: pulse 2.2s ease-in-out infinite; }
+.gc .gnames { font: 600 clamp(2.2rem, 11vw, 3rem)/1.1 var(--serif); letter-spacing:.08em; color: var(--f-ivory); }
+.seal { width: 96px; height: 96px; border-radius: 50%; border: 0; cursor: pointer; background: radial-gradient(circle at 35% 30%, #fff1c4, var(--f-gold) 55%, #7d5a14); box-shadow: 0 0 0 6px rgba(227,190,106,.25), 0 10px 30px rgba(0,0,0,.6); color: #4a3206; animation: pulse 2.2s ease-in-out infinite; }
 @keyframes pulse { 50% { transform: scale(1.07); box-shadow: 0 0 0 12px rgba(227,190,106,.12), 0 10px 30px rgba(0,0,0,.6); } }
 .gc .tap { font-size: 1rem; color: var(--f-gold-l); letter-spacing: .04em; }
 .skip { position: absolute; z-index: 4; right: max(16px, env(safe-area-inset-right, 0px)); top: max(14px, env(safe-area-inset-top, 0px)); background: none; border: 0; color: var(--f-gold-l); font-size: .95rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 8px; min-height: 40px; }
@@ -100,7 +100,7 @@ main { max-width: 480px; margin: 0 auto; }
 .win .gtitle.long { font-size: clamp(2.4rem, 11.5vw, 3.2rem); }
 .inv { font: 500 1rem var(--serif); letter-spacing: .34em; text-transform: uppercase; color: var(--f-gold-l); margin: 4px 0 18px; }
 .role { font: 500 1.05rem var(--serif); color: var(--f-gold); letter-spacing: .04em; }
-.nm { font: 700 clamp(1.6rem, 8vw, 2.1rem)/1.2 var(--serif); color: var(--f-ivory); margin: 2px 0 0; }
+.nm { font: 600 clamp(1.15rem, 5.6vw, 1.5rem)/1.3 var(--serif); white-space: nowrap; color: var(--f-ivory); margin: 2px 0 0; }
 .win .close { font-size: 1rem; line-height: 1.55; color: #f1dfc3; max-width: 32ch; margin: 20px auto 0; }
 .chip { margin: 26px -18px 0; padding: 18px 16px 22px; background: linear-gradient(180deg, rgba(227,190,106,.2), rgba(227,190,106,.06)); border-top: 1px solid var(--f-gold); }
 .chip .row { display: grid; gap: 2px; }
@@ -133,6 +133,7 @@ section .lead { color: var(--ink-soft); max-width: 36ch; margin: 0 auto; font-si
 .count { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 22px; }
 .count div { background: #fff; border: 1px solid rgba(201,162,74,.5); border-radius: 12px; padding: 14px 4px 10px; box-shadow: 0 6px 16px rgba(91,26,46,.08); }
 .count b { display: block; font-family: var(--head); font-size: 1.9rem; line-height: 1; color: var(--wine); font-variant-numeric: tabular-nums; }
+.cdcap { font: 600 .8rem var(--serif); letter-spacing:.12em; text-transform:uppercase; color: var(--wine); margin: 22px 0 -10px; }
 .count span { font-size: .62rem; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-soft); }
 
 /* events: your three invitation cards, with the page's animations drawn over them */
@@ -206,7 +207,7 @@ img{max-width:100%}
     <p class="small">You are warmly invited to the</p>
     <p class="gtitle gold" id="gTitle"></p>
     <p class="gnames" id="gNames"></p>
-    <button class="seal" id="seal" type="button" aria-label="Open the invitation"></button>
+    <button class="seal" id="seal" type="button" aria-label="Open the invitation"><svg viewBox="0 0 40 40" width="38" height="38" aria-hidden="true"><path d="M20 3l7 17-7 17-7-17z" fill="none" stroke="#4a3206" stroke-width="2.2"/><circle cx="20" cy="20" r="3.2" fill="#4a3206"/></svg></button>
     <p class="tap">Tap the seal to open</p>
   </div>
 </div>
@@ -243,15 +244,7 @@ img{max-width:100%}
       <button class="reveal-btn" id="revealBtn" type="button">Reveal without scratching</button>
     </section>
 
-    <section id="countdown">
-      <h2 id="cdTitle">Counting down</h2>
-      <div class="count">
-        <div><b id="cd">0</b><span>Days</span></div>
-        <div><b id="ch">0</b><span>Hours</span></div>
-        <div><b id="cm">0</b><span>Minutes</span></div>
-        <div><b id="cs">0</b><span>Seconds</span></div>
-      </div>
-    </section>
+    <section id="countdown"><h2 id="cdTitle">Counting down</h2><div id="cdWrap"></div></section>
 
     <section id="events">
       <h2 id="evTitle">The celebrations</h2>
@@ -288,7 +281,7 @@ const INVITE = {
   eventKeys: ["mehndi", "shadi", "valima"],   // which events this version of the invitation shows
   events: {
     mehndi: { name: "Mehndi", scene: "mehndi",
-      start: "2026-12-10T18:00:00+05:00", end: "2026-12-10T22:00:00+05:00",
+      start: "2026-12-11T18:00:00+05:00", end: "2026-12-11T22:00:00+05:00",
       venue: "Rani Empire", address: "Malir, Karachi",
       card: { src: "cards/mehndi.jpg", w: 756, h: 1134, alt: "Mehndi Ceremony invitation. 10th December, 6:00 PM onwards, Rani Empire, Malir, Karachi." } },
     shadi: { name: "Shadi", scene: "shadi",
@@ -296,7 +289,7 @@ const INVITE = {
       venue: "Shadiqila Banquet", address: "Jauhar, Karachi",
       card: { src: "cards/shadi.jpg", w: 1000, h: 1338, alt: "Barat Ceremony invitation. 19 December 2026, 2pm to 5pm, Shadiqila Banquet, Jauhar, Karachi." } },
     valima: { name: "Valima", scene: "valima", allDay: true,   /* your card shows no time, so the calendar entry is all day */
-      start: "2026-12-24T19:00:00+05:00",
+      start: "2026-12-24T00:00:00+05:00",
       venue: "Majistic Banquet", address: "Karachi",
       card: { src: "cards/valima.jpg", w: 756, h: 1134, alt: "Valima Reception invitation. 24th December, Majistic Banquet." } }
   },
@@ -337,7 +330,7 @@ const hd = new Date(heroEv.start);
 $("heartLabel").textContent = heroEv.key === "valima" && EVS.length > 1 ? "Valima date" : (EVS.length === 1 ? `${heroEv.name} date` : "Save the date");
 $("bigDate").textContent = hd.toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: TZ });
 $("bigYear").textContent = hd.toLocaleDateString("en-GB", { weekday: "long", year: "numeric", timeZone: TZ });
-$("cdTitle").textContent = hasShadi ? "Counting down to forever" : `Counting down to the ${EVS[0].name}`;
+
 $("evTitle").textContent = EVS.length === 1 ? "You are invited" : "The celebrations";
 $("evLead").textContent = EVS.length === 1
   ? "Here is the time and place. We would love to see you there."
@@ -348,8 +341,8 @@ const nEv = EVS.length;
 const titleWord = nEv === 1 ? EVS[0].name : nEv === 2 ? `${EVS[0].name} & ${EVS[1].name}` : "Wedding";
 ["gTitle", "hTitle"].forEach((id) => { $(id).textContent = titleWord; if (titleWord.length > 9) $(id).classList.add("long"); });
 $("invWord").textContent = nEv === 3 ? "Celebrations" : "Invitation";
-$("gNames").textContent = names;
-$("seal").textContent = INVITE.groom.short[0] + "&" + INVITE.bride.short[0];
+$("gNames").textContent = INVITE.groom.short[0] + " & " + INVITE.bride.short[0];
+
 $("intro").textContent = INVITE.intro;
 $("closing").textContent = INVITE.closing;
 [["1", INVITE.groom], ["2", INVITE.bride]].forEach(([k, p]) => { $("t" + k).textContent = p.title; $("n" + k).textContent = p.name; });
@@ -397,14 +390,25 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("zoom
 })();
 
 /* ---------- countdown ---------- */
-const target = new Date(EVS[0].start).getTime();
-function tick() {
-  const s = Math.max(0, Math.floor((target - Date.now()) / 1000));
-  $("cd").textContent = Math.floor(s / 86400);
-  $("ch").textContent = String(Math.floor(s % 86400 / 3600)).padStart(2, "0");
-  $("cm").textContent = String(Math.floor(s % 3600 / 60)).padStart(2, "0");
-  $("cs").textContent = String(s % 60).padStart(2, "0");
-}
+const cdEvs = EVS.filter((e) => e.key !== "mehndi");
+if (!cdEvs.length) $("countdown").hidden = true;
+$("cdTitle").textContent = cdEvs.length > 1 ? "Counting down" : cdEvs.length ? `Counting down to the ${cdEvs[0].name}` : "";
+const cdTicks = cdEvs.map((e) => {
+  const w = document.createElement("div");
+  if (cdEvs.length > 1) { const c = document.createElement("p"); c.className = "cdcap"; c.textContent = `${e.name} · ${new Date(e.start).toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: TZ })}`; w.append(c); }
+  const g = document.createElement("div"); g.className = "count";
+  const bs = ["Days", "Hours", "Minutes", "Seconds"].map((l) => { const d = document.createElement("div"); d.innerHTML = `<b>0</b><span>${l}</span>`; g.append(d); return d.firstChild; });
+  w.append(g); $("cdWrap").append(w);
+  const target = new Date(e.start).getTime();
+  return () => {
+    const s = Math.max(0, Math.floor((target - Date.now()) / 1000));
+    bs[0].textContent = Math.floor(s / 86400);
+    bs[1].textContent = String(Math.floor(s % 86400 / 3600)).padStart(2, "0");
+    bs[2].textContent = String(Math.floor(s % 3600 / 60)).padStart(2, "0");
+    bs[3].textContent = String(s % 60).padStart(2, "0");
+  };
+});
+const tick = () => cdTicks.forEach((f) => f());
 tick(); setInterval(tick, 1000);
 
 let entered = false;
