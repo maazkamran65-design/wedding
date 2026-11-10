@@ -304,7 +304,8 @@ const INVITE = {
 
 const $ = (id) => document.getElementById(id);
 const EVS = INVITE.eventKeys.map((k) => ({ key: k, ...INVITE.events[k] }));
-const names = `${INVITE.groom.short} & ${INVITE.bride.short}`;
+const ZAIDI = /*Z*/false/*Z*/;   // true = invitation from the bride's family: bride first, YouTube sound
+const names = ZAIDI ? `${INVITE.bride.short} & ${INVITE.groom.short}` : `${INVITE.groom.short} & ${INVITE.bride.short}`;
 const hasShadi = INVITE.eventKeys.includes("shadi");
 $("footNames").textContent = names;
 $("footLine").textContent = INVITE.footer;
@@ -341,18 +342,23 @@ const nEv = EVS.length;
 const titleWord = nEv === 1 ? EVS[0].name : nEv === 2 ? `${EVS[0].name} & ${EVS[1].name}` : "Wedding";
 ["gTitle", "hTitle"].forEach((id) => { $(id).textContent = titleWord; if (titleWord.length > 9) $(id).classList.add("long"); });
 $("invWord").textContent = nEv === 3 ? "Celebrations" : "Invitation";
-$("gNames").textContent = INVITE.groom.short[0] + " & " + INVITE.bride.short[0];
+$("gNames").textContent = ZAIDI ? INVITE.bride.short[0] + " & " + INVITE.groom.short[0] : INVITE.groom.short[0] + " & " + INVITE.bride.short[0];
 
-const formal = INVITE.eventKeys.includes("valima");
+const formal = true;
 $("intro").textContent = INVITE.intro;
+const host = "Mr &amp; Mrs " + (INVITE.eventKeys.includes("valima") && !ZAIDI ? "Syed Baqar Rizvi" : "Syed Ali Muzaffar Zaidi");
+$("intro").innerHTML = `With the grace of<br><b>${host}</b><br>request the pleasure of your company at the`;
+$("gSmall").innerHTML = `With the grace of<br>${host}<br>request your presence at the`;
 if (formal) {
-  $("intro").innerHTML = "With the grace of Allah <br><b>Mr &amp; Mrs Syed Baqar Rizvi</b><br>request the pleasure of your company at the";
-  $("gSmall").innerHTML = "With the grace of Allah <br>Mr &amp; Mrs Syed Baqar Rizvi<br>request your presence at the";
   $("footPre").textContent = "With the duas of";
   $("footLine").textContent = "Thank you for reading. We will be waiting for you.";
 }
+$("footPre").textContent = "Please come and bless";
+$("footLine").textContent = ZAIDI
+  ? "Your presence and your duas are our greatest blessing. Come, give your blessings to Mehwar and Aoj as they begin their new life together. We will be waiting for you."
+  : "Your presence and your duas are our greatest blessing. Come, give your blessings to Aoj and Mehwar as they begin their new life together. We will be waiting for you.";
 $("closing").textContent = INVITE.closing;
-[["1", INVITE.groom], ["2", INVITE.bride]].forEach(([k, p]) => { $("t" + k).textContent = p.title; $("n" + k).textContent = p.name; });
+(ZAIDI ? [["1", INVITE.bride], ["2", INVITE.groom]] : [["1", INVITE.groom], ["2", INVITE.bride]]).forEach(([k, p]) => { $("t" + k).textContent = p.title; $("n" + k).textContent = p.name; });
 /* ---------- event cards ---------- */
 EVS.forEach((e) => {
   const el = document.createElement("article");
@@ -629,13 +635,29 @@ document.querySelectorAll(".event").forEach((c) => sceneIO.observe(c));
 
 /* sound button */
 let muted = false;
+/* the bride's-family version plays one YouTube short for the whole invitation (hidden player) */
+const YTMODE = false;   // YouTube sound turned off: the built-in music plays
+const YTID = "q4X-qYN71xw";
+const YT = {
+  f: null,
+  start() {
+    if (this.f) return;
+    const f = document.createElement("iframe");
+    f.src = `https://www.youtube.com/embed/${YTID}?autoplay=1&loop=1&playlist=${YTID}&controls=0&playsinline=1&enablejsapi=1&rel=0`;
+    f.allow = "autoplay; encrypted-media"; f.title = "Background music"; f.setAttribute("aria-hidden", "true");
+    f.style.cssText = "position:fixed;left:0;bottom:0;width:4px;height:4px;border:0;opacity:.01;pointer-events:none";
+    document.body.appendChild(f); this.f = f;
+  },
+  cmd(fn) { try { this.f && this.f.contentWindow.postMessage(JSON.stringify({ event: "command", func: fn, args: [] }), "*"); } catch (e) {} }
+};
 $("snd").addEventListener("click", () => {
-  muted = !muted; Snd.setMuted(muted);
+  muted = !muted;
+  if (YTMODE) YT.cmd(muted ? "pauseVideo" : "playVideo"); else Snd.setMuted(muted);
   $("snd").textContent = muted ? "Sound off" : "Sound on";
   $("snd").setAttribute("aria-pressed", String(muted));
-  if (!muted) Snd.resume();
+  if (!muted && !YTMODE) Snd.resume();
 });
-document.addEventListener("visibilitychange", () => (document.hidden ? Snd.pause() : Snd.resume()));
+document.addEventListener("visibilitychange", () => { if (YTMODE) { if (!muted) YT.cmd(document.hidden ? "pauseVideo" : "playVideo"); } else (document.hidden ? Snd.pause() : Snd.resume()); });
 
 /* ---------- opening the gate ---------- */
 let opened = false;
@@ -643,7 +665,7 @@ function enter() {
   $("gate").classList.add("gone"); entered = true; $("snd").hidden = false;
   window.scrollTo(0, 0);
 }
-function startSound() { if (Snd.start()) Snd.scene(bestScene() || EVS[0].scene); }
+function startSound() { if (YTMODE) { YT.start(); return; } if (Snd.start()) Snd.scene(bestScene() || EVS[0].scene); }
 function openGate() {
   if (opened) return; opened = true;
   startSound();
